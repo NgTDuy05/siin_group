@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Static files
 app.use('/uploads', express.static('uploads'));
-
+app.use(express.static('public'));
 // Request logging
 app.use((req, res, next) => {
     logger.info(`${req.method} ${req.path}`);

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini E-commerce API - Siin Group</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+        
+        .container {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 90%;
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        
+        .api-info {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        
+        .endpoint {
+            background: white;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .method {
+            padding: 0.3rem 0.8rem;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        
+        .get { background: #28a745; color: white; }
+        .post { background: #007bff; color: white; }
+        .put { background: #ffc107; color: #333; }
+        .delete { background: #dc3545; color: white; }
+        
+        .path {
+            font-family: 'Courier New', monospace;
+            color: #333;
+            flex-grow: 1;
+            margin-left: 1rem;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #28a745;
+            color: white;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        
+        .section-title {
+            color: #667eea;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #999;
+            font-size: 0.9rem;
+        }
+        
+        a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="status">🟢 API Online</div>
+        <h1>🛒 Mini E-commerce API</h1>
+        <p class="subtitle">Backend API cho hệ thống bán hàng - Siin Group</p>
+        
+        <div class="api-info">
+            <h3>📍 Base URL</h3>
+            <code>https://siin.ngtduy.xyz</code>
+        </div>
+        
+        <h2 class="section-title">🔐 Authentication</h2>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="path">/api/auth/register</span>
+        </div>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="path">/api/auth/login</span>
+        </div>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="path">/api/auth/refresh-token</span>
+        </div>
+        
+        <h2 class="section-title">📦 Products</h2>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/api/products</span>
+        </div>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/api/products/:id</span>
+        </div>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="path">/api/products</span>
+        </div>
+        <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="path">/api/products/:id</span>
+        </div>
+        <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="path">/api/products/:id</span>
+        </div>
+        
+        <h2 class="section-title">🛍️ Orders</h2>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/api/orders</span>
+        </div>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="path">/api/orders/:id</span>
+        </div>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="path">/api/orders</span>
+        </div>
+        
+        <div class="footer">
+            <p>Developed with ❤️ by Siin Group</p>
+            <p>Powered by Node.js + Express + MySQL + Docker</p>
+        </div>
+    </div>
+</body>
+</html>
