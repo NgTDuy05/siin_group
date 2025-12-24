@@ -6,7 +6,12 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "migrate": "node src/migrations/migrate.js",
-    "seed": "node src/seeders/seed.js"
+    "seed": "node src/seeders/seed.js",
+    "test": "jest --testPathIgnorePatterns=integration",
+    "test:unit": "jest --testPathIgnorePatterns=integration",
+    "test:integration": "jest --testPathPattern=integration",
+    "test:all": "jest",
+    "test:coverage": "jest --coverage --testPathIgnorePatterns=integration"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +29,8 @@
     "winston": "^3.19.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "jest": "^30.2.0",
+    "nodemon": "^3.1.11",
+    "supertest": "^7.1.4"
   }
 }
