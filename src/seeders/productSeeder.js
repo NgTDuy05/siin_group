@@ -1,4 +1,4 @@
-const db = require('../config/database');
+const { Product } = require('../models');
 
 const products = [
     { name: 'Laptop Dell XPS 13', description: 'High-performance ultrabook', price: 1299.99, stock: 15, category_id: 1 },
@@ -15,12 +15,9 @@ const products = [
 
 const seedProducts = async () => {
     try {
-        for (const product of products) {
-            await db.query(
-                'INSERT INTO products (name, description, price, stock, category_id) VALUES (?, ?, ?, ?, ?)',
-                [product.name, product.description, product.price, product.stock, product.category_id]
-            );
-        }
+        await Product.bulkCreate(products, {
+            ignoreDuplicates: true
+        });
         console.log('✓ Products seeded successfully');
     } catch (error) {
         console.error('Product seeding failed:', error);

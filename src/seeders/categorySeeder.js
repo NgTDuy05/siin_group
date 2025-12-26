@@ -1,4 +1,4 @@
-const db = require('../config/database');
+const { Category } = require('../models');
 
 const categories = [
     { name: 'Electronics', description: 'Electronic devices and accessories' },
@@ -8,12 +8,9 @@ const categories = [
 
 const seedCategories = async () => {
     try {
-        for (const category of categories) {
-            await db.query(
-                'INSERT INTO categories (name, description) VALUES (?, ?)',
-                [category.name, category.description]
-            );
-        }
+        await Category.bulkCreate(categories, {
+            ignoreDuplicates: true
+        });
         console.log('✓ Categories seeded successfully');
     } catch (error) {
         console.error('Category seeding failed:', error);
