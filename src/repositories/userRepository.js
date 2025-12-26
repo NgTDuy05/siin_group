@@ -1,32 +1,34 @@
-const db = require('../config/database');
+const { User } = require('../models');
 
 class UserRepository {
   async findByEmail(email) {
-    const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    return users[0] || null;
+    return await User.findOne({
+      where: { email },
+      attributes: { include: ['password'] }
+    });
   }
 
   async findById(id) {
-    const [users] = await db.query('SELECT * FROM users WHERE id = ?', [id]);
-    return users[0] || null;
+    return await User.findByPk(id);
   }
 
   async create(userData) {
     const { name, email, password } = userData;
-    const [result] = await db.query(
-      'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-      [name, email, password]
-    );
-    return { id: result.insertId, name, email };
+    const user = await User.create({ name, email, password });
+    return { id: user.id, name: user.name, email: user.email };
   }
 
   async updateRefreshToken(userId, refreshToken) {
-    await db.query('UPDATE users SET refresh_token = ? WHERE id = ?', [refreshToken, userId]);
+    await User.update(
+      { refresh_token: refreshToken },
+      { where: { id: userId } }
+    );
   }
 
   async findByRefreshToken(refreshToken) {
-    const [users] = await db.query('SELECT * FROM users WHERE refresh_token = ?', [refreshToken]);
-    return users[0] || null;
+    return await User.findOne({
+      where: { refresh_token: refreshToken }
+    });
   }
 }
 

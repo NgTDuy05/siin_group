@@ -1,21 +1,17 @@
-const db = require('../config/database');
+const { sequelize, Order, OrderItem, Product, User } = require('../models');
 const orderRepository = require('../repositories/orderRepository');
-const productRepository = require('../repositories/productRepository');
 
 class OrderService {
   async createOrder(userId, items) {
-    const connection = await db.getConnection();
-    
-    try {
-      await connection.beginTransaction();
-
+    // Use Sequelize transaction
+    const result = await sequelize.transaction(async (transaction) => {
       let totalAmount = 0;
       const orderItems = [];
 
       // Validate products and calculate total
       for (const item of items) {
-        const product = await productRepository.findById(item.product_id);
-        
+        const product = await Product.findByPk(item.product_id, { transaction });
+
         if (!product) {
           throw new Error(`Product with ID ${item.product_id} not found`);
         }
@@ -24,7 +20,7 @@ class OrderService {
           throw new Error(`Insufficient stock for product: ${product.name}`);
         }
 
-        const itemTotal = product.price * item.quantity;
+        const itemTotal = parseFloat(product.price) * item.quantity;
         totalAmount += itemTotal;
 
         orderItems.push({
@@ -33,32 +29,39 @@ class OrderService {
           price: product.price
         });
 
-        // Update stock
-        await connection.query(
-          'UPDATE products SET stock = stock - ? WHERE id = ?',
-          [item.quantity, product.id]
-        );
+        // Update stock using Sequelize
+        product.stock -= item.quantity;
+        await product.save({ transaction });
       }
 
       // Create order
-      const orderId = await orderRepository.create({ user_id: userId, total_amount: totalAmount });
+      const order = await Order.create(
+        {
+          user_id: userId,
+          total_amount: totalAmount,
+          status: 'pending'
+        },
+        { transaction }
+      );
 
       // Insert order items
       for (const item of orderItems) {
-        await orderRepository.createOrderItem({ ...item, order_id: orderId });
+        await OrderItem.create(
+          {
+            order_id: order.id,
+            product_id: item.product_id,
+            quantity: item.quantity,
+            price: item.price
+          },
+          { transaction }
+        );
       }
 
-      await connection.commit();
+      return order.id;
+    });
 
-      // Fetch complete order
-      return await orderRepository.findById(orderId, userId);
-
-    } catch (error) {
-      await connection.rollback();
-      throw error;
-    } finally {
-      connection.release();
-    }
+    // Fetch complete order
+    return await orderRepository.findById(result, userId);
   }
 
   async getOrders(filters) {

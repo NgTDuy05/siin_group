@@ -1,91 +1,89 @@
-const db = require('../config/database');
+const { Product, Category } = require('../models');
+const { Op } = require('sequelize');
 
 class ProductRepository {
   async findAll(filters) {
     const { page = 1, limit = 10, search = '', category_id, minPrice, maxPrice, sortBy = 'created_at', sortOrder = 'DESC' } = filters;
-    
+
     const offset = (page - 1) * limit;
-    let whereClauses = [];
-    let params = [];
+    const where = {};
 
     if (search) {
-      whereClauses.push('(p.name LIKE ? OR p.description LIKE ?)');
-      params.push(`%${search}%`, `%${search}%`);
+      where[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { description: { [Op.like]: `%${search}%` } }
+      ];
     }
     if (category_id) {
-      whereClauses.push('p.category_id = ?');
-      params.push(category_id);
+      where.category_id = category_id;
     }
-    if (minPrice) {
-      whereClauses.push('p.price >= ?');
-      params.push(minPrice);
-    }
-    if (maxPrice) {
-      whereClauses.push('p.price <= ?');
-      params.push(maxPrice);
+    if (minPrice || maxPrice) {
+      where.price = {};
+      if (minPrice) where.price[Op.gte] = minPrice;
+      if (maxPrice) where.price[Op.lte] = maxPrice;
     }
 
-    const whereClause = whereClauses.length > 0 ? 'WHERE ' + whereClauses.join(' AND ') : '';
     const allowedSortFields = ['name', 'price', 'created_at', 'stock'];
     const sortField = allowedSortFields.includes(sortBy) ? sortBy : 'created_at';
     const order = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
-    const [countResult] = await db.query(`SELECT COUNT(*) as total FROM products p ${whereClause}`, params);
-    const total = countResult[0].total;
+    const total = await Product.count({ where });
 
-    const [products] = await db.query(
-      `SELECT p.*, c.name as category_name 
-       FROM products p 
-       LEFT JOIN categories c ON p.category_id = c.id 
-       ${whereClause}
-       ORDER BY p.${sortField} ${order}
-       LIMIT ? OFFSET ?`,
-      [...params, parseInt(limit), parseInt(offset)]
-    );
+    const products = await Product.findAll({
+      where,
+      include: [
+        {
+          model: Category,
+          as: 'category',
+          attributes: ['id', 'name']
+        }
+      ],
+      order: [[sortField, order]],
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    });
 
     return { products, total, page: parseInt(page), limit: parseInt(limit) };
   }
 
   async findById(id) {
-    const [products] = await db.query(
-      `SELECT p.*, c.name as category_name 
-       FROM products p 
-       LEFT JOIN categories c ON p.category_id = c.id 
-       WHERE p.id = ?`,
-      [id]
-    );
-    return products[0] || null;
+    return await Product.findByPk(id, {
+      include: [
+        {
+          model: Category,
+          as: 'category',
+          attributes: ['id', 'name']
+        }
+      ]
+    });
   }
 
   async create(productData) {
     const { name, description, price, stock, category_id, image } = productData;
-    const [result] = await db.query(
-      'INSERT INTO products (name, description, price, stock, category_id, image) VALUES (?, ?, ?, ?, ?, ?)',
-      [name, description, price, stock || 0, category_id, image]
-    );
-    return await this.findById(result.insertId);
+    const product = await Product.create({
+      name,
+      description,
+      price,
+      stock: stock || 0,
+      category_id,
+      image
+    });
+    return await this.findById(product.id);
   }
 
   async update(id, productData) {
-    const updateFields = [];
-    const params = [];
+    const product = await Product.findByPk(id);
+    if (!product) return null;
 
-    Object.keys(productData).forEach(key => {
-      if (productData[key] !== undefined) {
-        updateFields.push(`${key} = ?`);
-        params.push(productData[key]);
-      }
-    });
-
-    if (updateFields.length === 0) return null;
-
-    params.push(id);
-    await db.query(`UPDATE products SET ${updateFields.join(', ')} WHERE id = ?`, params);
+    await product.update(productData);
     return await this.findById(id);
   }
 
   async delete(id) {
-    await db.query('DELETE FROM products WHERE id = ?', [id]);
+    const product = await Product.findByPk(id);
+    if (product) {
+      await product.destroy();
+    }
   }
 }
 
