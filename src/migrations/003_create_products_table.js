@@ -1,29 +1,72 @@
-const db = require('../config/database');
+const { sequelize } = require('../models');
+const { DataTypes } = require('sequelize');
 
 const up = async () => {
-    const sql = `
-    CREATE TABLE IF NOT EXISTS products (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      description TEXT,
-      price DECIMAL(10, 2) NOT NULL,
-      stock INT DEFAULT 0,
-      image VARCHAR(255),
-      category_id INT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
-      INDEX idx_category (category_id),
-      INDEX idx_price (price)
-    )
-  `;
-    await db.query(sql);
-    console.log('✓ Products table created');
+  const queryInterface = sequelize.getQueryInterface();
+
+  await queryInterface.createTable('products', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    name: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    price: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false
+    },
+    stock: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    image: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    category_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'categories',
+        key: 'id'
+      },
+      onDelete: 'SET NULL'
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    }
+  });
+
+  // Add indexes
+  await queryInterface.addIndex('products', ['category_id'], {
+    name: 'idx_category'
+  });
+  await queryInterface.addIndex('products', ['price'], {
+    name: 'idx_price'
+  });
+
+  console.log('✓ Products table created');
 };
 
 const down = async () => {
-    await db.query('DROP TABLE IF EXISTS products');
-    console.log('✓ Products table dropped');
+  const queryInterface = sequelize.getQueryInterface();
+  await queryInterface.dropTable('products');
+  console.log('✓ Products table dropped');
 };
 
 module.exports = { up, down };

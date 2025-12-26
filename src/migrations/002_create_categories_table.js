@@ -1,22 +1,42 @@
-const db = require('../config/database');
+const { sequelize } = require('../models');
+const { DataTypes } = require('sequelize');
 
 const up = async () => {
-    const sql = `
-    CREATE TABLE IF NOT EXISTS categories (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      description TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    )
-  `;
-    await db.query(sql);
-    console.log('✓ Categories table created');
+  const queryInterface = sequelize.getQueryInterface();
+
+  await queryInterface.createTable('categories', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    name: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    }
+  });
+
+  console.log('✓ Categories table created');
 };
 
 const down = async () => {
-    await db.query('DROP TABLE IF EXISTS categories');
-    console.log('✓ Categories table dropped');
+  const queryInterface = sequelize.getQueryInterface();
+  await queryInterface.dropTable('categories');
+  console.log('✓ Categories table dropped');
 };
 
 module.exports = { up, down };

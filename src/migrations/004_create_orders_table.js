@@ -1,26 +1,60 @@
-const db = require('../config/database');
+const { sequelize } = require('../models');
+const { DataTypes } = require('sequelize');
 
 const up = async () => {
-    const sql = `
-    CREATE TABLE IF NOT EXISTS orders (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      user_id INT NOT NULL,
-      total_amount DECIMAL(10, 2) NOT NULL,
-      status ENUM('pending', 'processing', 'completed', 'cancelled') DEFAULT 'pending',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-      INDEX idx_user (user_id),
-      INDEX idx_status (status)
-    )
-  `;
-    await db.query(sql);
-    console.log('✓ Orders table created');
+  const queryInterface = sequelize.getQueryInterface();
+
+  await queryInterface.createTable('orders', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'users',
+        key: 'id'
+      },
+      onDelete: 'CASCADE'
+    },
+    total_amount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false
+    },
+    status: {
+      type: DataTypes.ENUM('pending', 'processing', 'completed', 'cancelled'),
+      allowNull: false,
+      defaultValue: 'pending'
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    }
+  });
+
+  // Add indexes
+  await queryInterface.addIndex('orders', ['user_id'], {
+    name: 'idx_user'
+  });
+  await queryInterface.addIndex('orders', ['status'], {
+    name: 'idx_status'
+  });
+
+  console.log('✓ Orders table created');
 };
 
 const down = async () => {
-    await db.query('DROP TABLE IF EXISTS orders');
-    console.log('✓ Orders table dropped');
+  const queryInterface = sequelize.getQueryInterface();
+  await queryInterface.dropTable('orders');
+  console.log('✓ Orders table dropped');
 };
 
 module.exports = { up, down };

@@ -1,24 +1,51 @@
-const db = require('../config/database');
+const { sequelize } = require('../models');
+const { DataTypes } = require('sequelize');
 
 const up = async () => {
-    const sql = `
-    CREATE TABLE IF NOT EXISTS users (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      email VARCHAR(255) UNIQUE NOT NULL,
-      password VARCHAR(255) NOT NULL,
-      refresh_token TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    )
-  `;
-    await db.query(sql);
-    console.log('✓ Users table created');
+  const queryInterface = sequelize.getQueryInterface();
+
+  await queryInterface.createTable('users', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    name: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    email: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      unique: true
+    },
+    password: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    refresh_token: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    }
+  });
+
+  console.log('✓ Users table created');
 };
 
 const down = async () => {
-    await db.query('DROP TABLE IF EXISTS users');
-    console.log('✓ Users table dropped');
+  const queryInterface = sequelize.getQueryInterface();
+  await queryInterface.dropTable('users');
+  console.log('✓ Users table dropped');
 };
 
 module.exports = { up, down };
