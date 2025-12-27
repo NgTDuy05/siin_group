@@ -108,3 +108,102 @@ exports.getOrderById = catchAsync(async (req, res, next) => {
         data: responseData
     });
 });
+
+exports.cancelOrder = catchAsync(async (req, res, next) => {
+    const orderId = req.params.id;
+    const userId = req.user.id;
+
+    const order = await orderService.cancelOrder(orderId, userId);
+
+    const responseData = {
+        id: order.id,
+        user_id: order.user_id,
+        total_amount: order.total_amount,
+        status: order.status,
+        created_at: order.created_at,
+        updated_at: order.updated_at,
+        user: {
+            id: order.user.id,
+            name: order.user.name,
+            email: order.user.email
+        },
+        items: order.items.map(oi => ({
+            product_id: oi.product_id,
+            product_name: oi.product.name,
+            quantity: oi.quantity,
+            price: oi.price
+        }))
+    };
+
+    res.json({
+        success: true,
+        message: 'Order cancelled successfully',
+        data: responseData
+    });
+});
+
+exports.markAsPaid = catchAsync(async (req, res, next) => {
+    const orderId = req.params.id;
+    const userId = req.user.id;
+
+    const order = await orderService.markAsPaid(orderId, userId);
+
+    const responseData = {
+        id: order.id,
+        user_id: order.user_id,
+        total_amount: order.total_amount,
+        status: order.status,
+        created_at: order.created_at,
+        updated_at: order.updated_at,
+        user: {
+            id: order.user.id,
+            name: order.user.name,
+            email: order.user.email
+        },
+        items: order.items.map(oi => ({
+            product_id: oi.product_id,
+            product_name: oi.product.name,
+            quantity: oi.quantity,
+            price: oi.price
+        }))
+    };
+
+    res.json({
+        success: true,
+        message: 'Order marked as paid successfully',
+        data: responseData
+    });
+});
+
+exports.markAsCompleted = catchAsync(async (req, res, next) => {
+    const orderId = req.params.id;
+    const userId = req.user.id;
+
+    const order = await orderService.markAsCompleted(orderId, userId);
+
+    const responseData = {
+        id: order.id,
+        user_id: order.user_id,
+        total_amount: order.total_amount,
+        status: order.status,
+        created_at: order.created_at,
+        updated_at: order.updated_at,
+        user: {
+            id: order.user.id,
+            name: order.user.name,
+            email: order.user.email
+        },
+        items: order.items.map(oi => ({
+            product_id: oi.product_id,
+            product_name: oi.product.name,
+            quantity: oi.quantity,
+            price: oi.price
+        }))
+    };
+
+    res.json({
+        success: true,
+        message: 'Order marked as completed successfully',
+        data: responseData
+    });
+});

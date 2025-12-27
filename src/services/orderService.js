@@ -84,6 +84,66 @@ class OrderService {
     }
     return order;
   }
+
+  async cancelOrder(orderId, userId) {
+    const order = await orderRepository.findById(orderId, userId);
+
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    // Business rule: Chỉ cho phép hủy nếu đơn hàng đang pending hoặc paid
+    if (!['pending', 'paid'].includes(order.status)) {
+      throw new Error(`Cannot cancel order with status: ${order.status}`);
+    }
+
+    // Hoàn trả stock nếu cần
+    await sequelize.transaction(async (transaction) => {
+      for (const item of order.items) {
+        const product = await Product.findByPk(item.product_id, { transaction });
+        if (product) {
+          product.stock += item.quantity;
+          await product.save({ transaction });
+        }
+      }
+
+      await orderRepository.updateStatus(orderId, userId, 'cancelled');
+    });
+
+    return await orderRepository.findById(orderId, userId);
+  }
+
+  async markAsPaid(orderId, userId) {
+    const order = await orderRepository.findById(orderId, userId);
+
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    // Business rule: Chỉ chuyển từ pending sang paid
+    if (order.status !== 'pending') {
+      throw new Error(`Cannot mark as paid. Current status: ${order.status}`);
+    }
+
+    await orderRepository.updateStatus(orderId, userId, 'paid');
+    return await orderRepository.findById(orderId, userId);
+  }
+
+  async markAsCompleted(orderId, userId) {
+    const order = await orderRepository.findById(orderId, userId);
+
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    // Business rule: Phải thanh toán trước khi hoàn thành
+    if (order.status !== 'paid') {
+      throw new Error(`Cannot complete order. Must be paid first. Current status: ${order.status}`);
+    }
+
+    await orderRepository.updateStatus(orderId, userId, 'completed');
+    return await orderRepository.findById(orderId, userId);
+  }
 }
 
 module.exports = new OrderService();

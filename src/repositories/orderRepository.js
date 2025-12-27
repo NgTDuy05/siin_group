@@ -87,6 +87,20 @@ class OrderRepository {
 
     return { orders, total, page: parseInt(page), limit: parseInt(limit) };
   }
+
+  async updateStatus(orderId, userId, status) {
+    const [updated] = await Order.update(
+      { status },
+      {
+        where: {
+          id: orderId,
+          user_id: userId
+        }
+      }
+    );
+
+    return updated;
+  }
 }
 
 module.exports = new OrderRepository();

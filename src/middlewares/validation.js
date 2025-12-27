@@ -51,11 +51,26 @@ const createOrderValidation = [
     validate
 ];
 
+// Category validations
+const createCategoryValidation = [
+    body('name').notEmpty().withMessage('Category name is required'),
+    body('description').optional().isString().withMessage('Description must be a string'),
+    validate
+];
+
+const updateCategoryValidation = [
+    body('name').optional().notEmpty().withMessage('Category name cannot be empty'),
+    body('description').optional().isString().withMessage('Description must be a string'),
+    validate
+];
+
 module.exports = {
     validate,
     registerValidation,
     loginValidation,
     createProductValidation,
     updateProductValidation,
-    createOrderValidation
+    createOrderValidation,
+    createCategoryValidation,
+    updateCategoryValidation
 };

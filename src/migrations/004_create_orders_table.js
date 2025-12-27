@@ -24,7 +24,7 @@ const up = async () => {
       allowNull: false
     },
     status: {
-      type: DataTypes.ENUM('pending', 'processing', 'completed', 'cancelled'),
+      type: DataTypes.ENUM('pending', 'paid', 'completed', 'cancelled'),
       allowNull: false,
       defaultValue: 'pending'
     },
