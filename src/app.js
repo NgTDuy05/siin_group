@@ -17,9 +17,23 @@ app.use(express.urlencoded({ extended: true }));
 // Static files
 app.use('/uploads', express.static('uploads'));
 app.use(express.static('public'));
-// Request logging
+
+// Request logging middleware
 app.use((req, res, next) => {
-    logger.info(`${req.method} ${req.path}`);
+    const start = Date.now();
+
+    // Log khi response kết thúc
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        const logMessage = `${req.method} ${req.originalUrl} - Status: ${res.statusCode} - ${duration}ms - IP: ${req.ip}`;
+
+        if (res.statusCode >= 400) {
+            logger.error(logMessage);
+        } else {
+            logger.info(logMessage);
+        }
+    });
+
     next();
 });
 
